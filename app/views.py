@@ -1,3 +1,5 @@
+from werkzeug.exceptions import RequestEntityTooLarge
+
 from run import app
 import os
 from flask import jsonify, request, send_file, abort
@@ -11,7 +13,6 @@ def hellow_world():
 
 @app.route('/upload/file', methods=["POST"])
 def general_file_upload():
-
     """ Uploads a file and saves it to the uploads folder declared in the config """
 
     if request.method == 'POST':
@@ -26,12 +27,15 @@ def general_file_upload():
                     f.save(file_path)
                 else:
                     filename = generate_filename(f.filename)
-            return jsonify({'success': {"response_code": "200",
+            return jsonify({'success': {"status": 200,
                                         'filename': filename,
                                         'full_link': app.config["DOMAIN"] + filename}})
+        except RequestEntityTooLarge:
+            abort(413)
         except Exception as e:
             print(e)
-            return "Error uploading file.", 500
+            return jsonify({'error': 'Error uploading file.',
+                            'status': 413})
     else:
         abort(405)
 
@@ -56,3 +60,7 @@ def method_not_allowed(e):
     return 'Method not allowed', 405
 
 
+@app.errorhandler(413)
+def method_not_allowed(e):
+    return jsonify({'error': 'File content too large. Max 20mb data.',
+                    'status': 413}), 413
