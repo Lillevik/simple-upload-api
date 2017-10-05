@@ -37,8 +37,8 @@ def general_file_upload():
 @app.route('/<file_name>')
 def get_file(file_name):
     path = app.config['UPLOADS_FOLDER']
-    if os.path.isfile(path + file_name):
-        file = os.path.join(path, file_name)
+    if os.path.isfile(path + '/' + file_name):
+        file = os.path.join(path + '/', file_name)
         return send_file(file)
     else:
         abort(404)
